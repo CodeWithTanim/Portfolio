@@ -4,7 +4,7 @@ import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 // Hidden server-side endpoint; not exposed to the browser client
 const FORM_BACKEND_ENDPOINT =
   process.env.FORM_BACKEND_ENDPOINT ||
-  'https://form.codewithtanim.works/f/8b16bca0883010fd';
+  'https://form-farm-azure.vercel.app/f/b27015215386ab43';
 
 export async function POST(req: NextRequest) {
   try {
@@ -88,20 +88,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Proxy securely to the upstream form backend
-    // Notice: Client never communicates with form.codewithtanim.works directly
-    const upstreamBody = new URLSearchParams();
-    upstreamBody.append('name', name);
-    upstreamBody.append('email', email);
-    upstreamBody.append('message', message);
-
+    // Notice: Client never communicates with form-farm directly
     const upstreamResponse = await fetch(FORM_BACKEND_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'User-Agent': 'CodeWithTanim-Portfolio-Gateway/1.0',
         'X-Forwarded-For': clientIp,
       },
-      body: upstreamBody.toString(),
+      body: JSON.stringify({ name, email, message }),
     });
 
     if (!upstreamResponse.ok && upstreamResponse.status !== 302 && upstreamResponse.status !== 303) {
